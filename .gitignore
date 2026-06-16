@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+
+# Secrets / local config
+.env
+
+# Runtime artifacts (regenerated locally; not part of the distribution)
+data/figure/*.png
+data/profiles/history/
+data/profiles/*_log/
+data/profiles/*_candidate.json
+*.bak_*
+
+# SQLite database — generated locally on first run (seqstats is rebuilt from
+# wyckoffstats/*.csv; prediction/critique history starts empty). Not committed.
+data/finagent.db
+data/*.db-wal
+data/*.db-shm
+
+# Deprecated/merged memory notes archive — inert, not loaded by the engine
+data/profiles/*_memory/_archive/
