@@ -2,59 +2,22 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """
-Bridge layer between finagent and WyckoffAnalysis.
-Calls the existing wyckoff_analyzer engine and formats output for LLM consumption.
+Bridge layer between finagent and the Wyckoff computation service.
+
+The Wyckoff engine AND the market-data fetching both run server-side (the
+service may be backed by Wind WDS). This client just asks the service for an
+analysis snapshot by symbol/date and formats the result for the LLM. The client
+holds no data backend; snapshot text formatting (incl. seqstats) stays local.
+
+Requires WYCKOFF_API_URL and WYCKOFF_API_KEY (your authorization code) in env.
 """
 from __future__ import annotations
-import sys
-import threading
+import logging
 from typing import Optional
 
-from finagent.config import WYCKOFF_PATH
+from finagent.service import service_post, WyckoffServiceError  # noqa: F401 (re-exported)
 
-# Thread-local for per-snapshot data_source_type (set by the executor thread that
-# is about to call run_analysis; read by the patched fetch_ohlcv).
-_call_ctx = threading.local()
-
-
-def _ensure_wyckoff_on_path() -> None:
-    wyckoff_str = str(WYCKOFF_PATH)
-    if wyckoff_str not in sys.path:
-        sys.path.insert(0, wyckoff_str)
-
-
-# ── Module-level monkey-patch (applied once, no per-call locking) ──────────────
-_patch_applied = False
-
-
-def _apply_wyckoff_patches() -> None:
-    """
-    One-shot module-level patch:
-      - Override wyckoff_analyzer's fetch_ohlcv with ours (reads data_source_type
-        from thread-local set by get_wyckoff_snapshot just before run_analysis).
-      - Silence wyckoff's bare print() noise by redirecting the wyckoff module's
-        builtins.print to a no-op (so it doesn't fight Rich console / pollute logs).
-    """
-    global _patch_applied
-    if _patch_applied:
-        return
-    _ensure_wyckoff_on_path()
-    import wyckoff_analyzer.data_fetcher as _wdf
-    import wyckoff_analyzer.main as _wmain
-    from finagent.data.fetcher import fetch_ohlcv_df as _our_fetch_df
-
-    def _patched_fetch_ohlcv(code, days=500, end_date=None):
-        dst = getattr(_call_ctx, "data_source_type", "stock")
-        return _our_fetch_df(code, days=days, end_date=end_date, data_source_type=dst)
-
-    _wmain.fetch_ohlcv = _patched_fetch_ohlcv
-    _wdf.fetch_ohlcv = _patched_fetch_ohlcv
-
-    # Silence wyckoff main's bare print() calls — replace its module-level print
-    # with a no-op so it doesn't interleave with Rich progress bars.
-    _wmain.print = lambda *a, **kw: None
-    _wdf.print = lambda *a, **kw: None
-    _patch_applied = True
+logger = logging.getLogger(__name__)
 
 
 def get_wyckoff_snapshot(
@@ -64,28 +27,24 @@ def get_wyckoff_snapshot(
     data_source_type: str = "stock",
 ) -> dict:
     """
-    Run WyckoffAnalysis engine for a symbol up to end_date.
-    Returns a dict with:
-      - raw: full result dict from run_analysis()
-      - text: LLM-friendly formatted string
-      - current_price: float
-      - market_phase: dict
-      - probability: dict
+    Run Wyckoff analysis for a symbol up to end_date via the remote service.
 
-    data_source_type: "stock" (default) or "index" — routes to ashareeodprices or aindexeodprices.
+    The service fetches the market data itself and runs the Wyckoff engine.
+    Returns a dict with the same shape as before:
+      - raw: analysis result dict from the service
+      - text: LLM-friendly formatted string (built client-side)
+      - current_price / market_phase / probability
+
+    data_source_type: "stock" (default) or "index" — passed through to the service.
     """
-    _apply_wyckoff_patches()
-    from wyckoff_analyzer.main import run_analysis
+    result = service_post("/v1/snapshot", {
+        "symbol": symbol,
+        "end_date": end_date,
+        "days": days,
+        "data_source_type": data_source_type,
+    })
 
-    # Pass data_source_type via thread-local — patched fetch_ohlcv reads it.
-    # This runs in the executor thread (from run_in_executor), so the value
-    # is visible to run_analysis -> fetch_ohlcv in the same thread.
-    _call_ctx.data_source_type = data_source_type
-    try:
-        result = run_analysis(symbol, days=days, end_date=end_date)
-    finally:
-        _call_ctx.data_source_type = "stock"  # reset to default
-
+    # Format client-side (includes the optional seqstats block).
     text = _format_for_llm(result)
     return {
         "raw": result,

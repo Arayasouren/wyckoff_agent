@@ -149,8 +149,8 @@ def fetch_trading_dates_and_prices(
 ) -> tuple[list[str], dict]:
     """
     Fetch full history and return (sorted_trading_dates, {date: close_price}).
-    Data source is controlled by DATA_SOURCE env var (yfinance|akshare|wind).
-    Falls back automatically if primary source fails.
+    Market data is served by the remote Wyckoff service (/v1/prices); retries on
+    transient service errors before giving up.
 
     data_source_type:
       - "stock" (default): days=2000 trading days back

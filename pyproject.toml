@@ -17,26 +17,22 @@ dependencies = [
     "rich>=13.7.0",
     "numpy>=1.24",
     "pandas>=2.0",
+    "requests>=2.28",
 ]
 
 [project.optional-dependencies]
-# Market data backends
-akshare = ["akshare>=1.12"]
-yfinance = ["yfinance>=0.2.40"]
-wind = ["oracledb>=2.0"]
 # OpenAI-compatible LLM provider + embeddings
 openai = ["openai>=1.40"]
 # Charts (FINAGENT_ENABLE_CHART=1)
 chart = ["matplotlib>=3.7"]
-# Everything except the licensed Wind backend
-all = ["akshare>=1.12", "yfinance>=0.2.40", "openai>=1.40", "matplotlib>=3.7"]
+all = ["openai>=1.40", "matplotlib>=3.7"]
 dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
 
 [project.scripts]
 finagent = "finagent.__main__:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["finagent", "wyckoff_analyzer"]
+packages = ["finagent"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

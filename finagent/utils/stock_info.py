@@ -42,44 +42,32 @@ def _board_from_symbol(symbol: str) -> str:
 
 def fetch_stock_basic_info(symbol: str) -> dict:
     """
-    Fetch stock name, SW-industry, and market cap from AkShare.
+    Fetch stock name, industry, and market cap from the Wyckoff service.
     Returns dict with keys: name, industry, total_mv_yi (亿), board.
     """
-    import akshare as ak
-
+    from finagent.service import service_post, WyckoffServiceError
     code = symbol.split(".")[0]
-    info = ak.stock_individual_info_em(symbol=code)
-    d = dict(zip(info["item"], info["value"]))
-
     try:
-        mv_yi = float(d.get("总市值", 0)) / 1e8
-    except (TypeError, ValueError):
-        mv_yi = 0.0
-
+        info = service_post("/v1/stockinfo", {"symbol": symbol, "kind": "stock"})
+    except WyckoffServiceError as e:
+        logger.warning(f"fetch_stock_basic_info: service lookup failed for {symbol}: {e}")
+        info = {}
     return {
-        "name":        d.get("股票简称", code),
-        "industry":    d.get("行业", ""),
-        "total_mv_yi": mv_yi,
-        "board":       _board_from_symbol(symbol),
+        "name":        info.get("name", code),
+        "industry":    info.get("industry", ""),
+        "total_mv_yi": float(info.get("total_mv_yi", 0) or 0),
+        "board":       info.get("board") or _board_from_symbol(symbol),
     }
 
 
 def fetch_index_basic_info(symbol: str) -> dict:
-    """Fetch index name from Wind aindexdescription, returns {symbol, name}."""
+    """Fetch index name from the Wyckoff service. Returns {symbol, name}."""
+    from finagent.service import service_post, WyckoffServiceError
     try:
-        from finagent.data.fetcher import _get_wind_connection, _wind_code
-        conn = _get_wind_connection()
-        cur = conn.cursor()
-        wind_code = _wind_code(symbol)
-        cur.execute(
-            "SELECT S_INFO_NAME FROM winddb.aindexdescription WHERE S_INFO_WINDCODE = :1",
-            [wind_code],
-        )
-        row = cur.fetchone()
-        cur.close()
-        name = row[0] if row else ""
-    except Exception as e:
-        logger.warning(f"fetch_index_basic_info: Wind lookup failed for {symbol}: {e}")
+        info = service_post("/v1/stockinfo", {"symbol": symbol, "kind": "index"})
+        name = info.get("name", "")
+    except WyckoffServiceError as e:
+        logger.warning(f"fetch_index_basic_info: service lookup failed for {symbol}: {e}")
         name = ""
     return {"symbol": symbol, "name": name}
 

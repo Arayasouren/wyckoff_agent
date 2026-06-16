@@ -11,22 +11,24 @@ FinAgent 是一个**自我进化**的威科夫（Wyckoff）技术分析智能体
 
 ## 功能概览
 
-- **威科夫分析内核**（`wyckoff_analyzer/`，已内置）：波段划分、阶段识别、事件检测、
-  点数图（P&F）目标位、8 阶段概率打分。
+- **威科夫分析内核**（远程服务）：波段划分、阶段识别、事件检测、点数图（P&F）目标位、
+  8 阶段概率打分。内核作为**授权服务**运行，客户端凭授权码调用（见下方"Wyckoff 计算服务"）。
 - **四智能体进化闭环**：Predictor / Critic / Reflector / Evolver。
 - **情境记忆库**：LLM 优先选择 + bge-m3 向量兜底的记忆检索，带跨股验证与自动精炼/合并。
 - **序列匹配概率**：将当前事件序列与 72.7 万行历史数据库比对，给出实证涨跌频率
   （首次运行自动从内置 CSV 构建）。
 - **多档案管理**：版本化、候选/部署、滚动回测。
-- **多数据源**：akshare（A 股，免费）/ yfinance（全球，免费）/ Wind WDS（需自有授权）。
+- **行情数据由服务提供**：客户端无需任何数据源/凭据；行情（可由 Wind WDS 支撑）与
+  威科夫计算都在服务端完成，客户端凭授权码调用。
 
 ---
 
 ## 环境要求
 
 - Python **3.9+**
-- 一个 LLM API Key（Anthropic，或任意 OpenAI 兼容端点，如 DeepSeek / SiliconFlow / 本地 vLLM）
-- 联网以拉取行情数据
+- 一个 LLM API Key（Anthropic，或任意 OpenAI 兼容端点，如 GLM/智谱、DeepSeek、本地 vLLM）
+- **Wyckoff 服务地址 + 授权码**（由运营方签发；行情与分析都由该服务提供）
+- 联网
 
 ---
 
@@ -40,7 +42,7 @@ git clone <your-repo-url> finagent && cd finagent
 python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
 # 3) 安装依赖（二选一）
-pip install -e ".[all]"          # 推荐：含 akshare/yfinance/openai/matplotlib 全部可选项
+pip install -e ".[all]"          # 含 openai + matplotlib 可选项
 # 或仅核心 + 按需：
 pip install -r requirements.txt
 ```
@@ -49,12 +51,11 @@ pip install -r requirements.txt
 
 | extra | 作用 |
 |---|---|
-| `akshare` | A 股免费行情（推荐） |
-| `yfinance` | 全球行情兜底 |
 | `openai` | OpenAI 兼容 LLM 端点 + 向量嵌入 |
-| `wind` | Wind WDS（Oracle，需 `oracledb` 与自有账号） |
 | `chart` | 画图（`matplotlib`，仅在开启画图时需要） |
-| `all` | 除 Wind 外的全部 |
+| `all` | 上面两者 |
+
+> 客户端不含任何行情数据库依赖（akshare/yfinance/Wind 都在服务端）。
 
 ---
 
@@ -66,24 +67,26 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-最少只需一个 LLM Key：
+最少需要一个 LLM Key + Wyckoff 服务地址与授权码：
 
 ```dotenv
 ANTHROPIC_API_KEY=sk-ant-...
 FINAGENT_MODEL=claude-sonnet-4-6
-DATA_SOURCE=akshare
+
+WYCKOFF_API_URL=https://your-wyckoff-service
+WYCKOFF_API_KEY=your-authorization-code
 ```
 
-使用 OpenAI 兼容端点（如 DeepSeek）：
+使用 OpenAI 兼容端点（如 GLM/智谱、DeepSeek）：
 
 ```dotenv
 LLM_PROVIDER=openai
-OPENAI_COMPAT_API_KEY=sk-...
-OPENAI_COMPAT_BASE_URL=https://api.deepseek.com/v1
-FINAGENT_MODEL=deepseek-chat
+OPENAI_COMPAT_API_KEY=your-glm-api-key
+OPENAI_COMPAT_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+FINAGENT_MODEL=glm-4.6
 ```
 
-其余可选项（嵌入、fallback 端点、Wind、画图）见 `.env.example` 注释。
+其余可选项（嵌入、fallback 端点、画图）见 `.env.example` 注释。
 
 ---
 
@@ -97,11 +100,11 @@ FINAGENT_MODEL=deepseek-chat
   不依赖历史表；`status` 里的胜率日志也来自档案本身。
 - `data/finagent.db` 是**本地生成产物**，已在 `.gitignore` 中，不纳入版本库。
 
-### 关于 Wind WDS（可选）
+### 关于市场数据
 
-Wind 是商业授权数据服务，本分发版**已清空所有 Wind 凭据**，仅保留接入代码作为接口。
-若你有自己的 Wind 账号，在 `.env` 中填好 `WIND_*` 并设 `DATA_SOURCE=wind`、
-`pip install oracledb` 即可启用。否则默认走 akshare / yfinance，无需任何凭据。
+所有行情数据由 **Wyckoff 服务**提供（服务端可接 Wind WDS 或其他数据源）。客户端**不含
+任何行情数据库依赖、也不需要数据凭据**——只要配好 `WYCKOFF_API_URL` 与 `WYCKOFF_API_KEY`。
+`seqstats` 历史参考表仍在本地（随包 CSV 构建），不经过服务。
 
 ---
 
@@ -147,8 +150,10 @@ python -m finagent compress-memory        # 强制合并相似记忆
 ## 目录结构
 
 ```
-finagent/            # 主程序包（CLI、四智能体、引擎、存储、数据、记忆、序列统计）
-wyckoff_analyzer/    # 内置威科夫计算内核
+finagent/            # 主程序包（CLI、四智能体、引擎、存储、记忆、序列统计）
+  service.py         # Wyckoff 服务客户端（取价 / 快照 / 个股信息）
+  wyckoff_bridge.py  # 调 /v1/snapshot 并格式化为 LLM 快照
+  data/fetcher.py    # 行情客户端（调 /v1/prices；无本地数据后端）
 data/
   profiles/
     mywyckoff.json         # 已训练的个股策略档案（当前档）
@@ -159,6 +164,8 @@ wyckoffstats/        # seqstats 源 CSV（首次运行据此构建参考表）
 stockinfo/tags.csv   # 标的的规模/风格/行业标签（供序列匹配分桶）
 scripts/             # 辅助脚本（如手动 ingest seqstats）
 ```
+
+> 威科夫计算内核**不在本仓库**——它作为授权服务运行（见上方"威科夫分析内核"）。
 
 ---
 

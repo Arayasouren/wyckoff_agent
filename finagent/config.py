@@ -18,27 +18,12 @@ PROFILE_HISTORY_DIR = PROFILES_DIR / "history"
 # keeps `evolve` headless-friendly). Enable with FINAGENT_ENABLE_CHART=1.
 ENABLE_CHART = os.getenv("FINAGENT_ENABLE_CHART", "0").strip() == "1"
 
-# Wyckoff computation kernel. The `wyckoff_analyzer` package is bundled at the
-# repo root (next to `finagent/`), so the default points there. Override via env
-# only if you keep the kernel elsewhere.
-WYCKOFF_PATH = Path(os.getenv("WYCKOFF_PATH", ROOT_DIR))
-
-# Market data source: "akshare" | "yfinance" | "wind"
-#   akshare  — free A-share data (recommended default for CN markets)
-#   yfinance — free global fallback
-#   wind     — Wind WDS (Oracle); requires your own licensed credentials (see below)
-DATA_SOURCE = os.getenv("DATA_SOURCE", "akshare")
-
-# Wind WDS (Oracle) connection — only used when DATA_SOURCE=wind.
-# Credentials are intentionally BLANK in this distribution: Wind is a licensed
-# commercial data service. Supply your own endpoint/account via .env to enable it.
-WIND_HOST     = os.getenv("WIND_HOST", "")
-WIND_PORT     = int(os.getenv("WIND_PORT", "1521"))
-WIND_SERVICE  = os.getenv("WIND_SERVICE", "")
-WIND_USER     = os.getenv("WIND_USER", "")
-WIND_PASSWORD = os.getenv("WIND_PASSWORD", "")
-WIND_TABLE         = os.getenv("WIND_TABLE", "winddb.ashareeodprices")
-ORACLE_CLIENT_DIR  = os.getenv("ORACLE_CLIENT_DIR", "")   # path to Instant Client dylibs
+# Wyckoff computation service — accessed remotely with an authorization code.
+# The service does BOTH the market-data fetching (it may be backed by Wind WDS)
+# and the Wyckoff computation. This client holds no data backend of its own.
+WYCKOFF_API_URL = os.getenv("WYCKOFF_API_URL", "").rstrip("/")
+WYCKOFF_API_KEY = os.getenv("WYCKOFF_API_KEY", "")          # your authorization code
+WYCKOFF_API_TIMEOUT = float(os.getenv("WYCKOFF_API_TIMEOUT", "60"))
 
 # LLM config
 DEFAULT_MODEL = os.getenv("FINAGENT_MODEL", "claude-sonnet-4-6")

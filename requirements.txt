@@ -5,12 +5,8 @@ python-dotenv>=1.0.0
 rich>=13.7.0
 numpy>=1.24
 pandas>=2.0
-
-# ── Market data (install at least one; akshare recommended for A-shares) ──
-akshare>=1.12          # free A-share data
-yfinance>=0.2.40       # free global fallback
+requests>=2.28          # talks to the Wyckoff service (data + analysis)
 
 # ── Optional ──────────────────────────────────────────────────────────────
-openai>=1.40           # OpenAI-compatible LLM provider + embeddings
-# oracledb>=2.0        # only needed for DATA_SOURCE=wind (Wind WDS / Oracle)
-# matplotlib>=3.7      # only needed when FINAGENT_ENABLE_CHART=1
+openai>=1.40            # OpenAI-compatible LLM provider + embeddings
+# matplotlib>=3.7       # only needed when FINAGENT_ENABLE_CHART=1
