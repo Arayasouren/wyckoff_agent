@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Post-evolution K-line chart with prediction arrows.
 Saved to data/figure/ after each evolve run.

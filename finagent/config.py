@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from pathlib import Path
 import os
 from dotenv import load_dotenv

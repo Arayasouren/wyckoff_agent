@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Reflector agent (GEPA-inspired): diagnose failure patterns from worst predictions.
 Outputs both a diagnosis report and memory suggestions for the MemoryManager.

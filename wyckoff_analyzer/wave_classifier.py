@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 MACD-based swing wave classifier.
 Translates MATLAB waveclassify.m logic to Python.

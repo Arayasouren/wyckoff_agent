@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Visualization module: generates multi-panel PNG charts for Wyckoff analysis.
 Charts are then assembled into PDF by main.py.

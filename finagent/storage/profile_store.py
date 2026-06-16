@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Profile-based strategy store.
 Profiles are cross-symbol: one active profile is used for all stocks.

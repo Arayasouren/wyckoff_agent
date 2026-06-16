@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Predictor agent: given a Wyckoff snapshot, predict the next 20 trading days.
 """

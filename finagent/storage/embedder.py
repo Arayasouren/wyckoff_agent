@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Embedding client for memory semantic retrieval.
 Calls an OpenAI-compatible /embeddings endpoint (e.g. SiliconFlow's BAAI/bge-m3).

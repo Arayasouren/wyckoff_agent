@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 CLI entry point: python -m finagent  or  finagent (after pip install -e .)
 

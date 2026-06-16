@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Base LLM agent supporting Anthropic SDK and OpenAI-compatible providers.
 Provider is selected via LLM_PROVIDER env var ("anthropic" | "openai").

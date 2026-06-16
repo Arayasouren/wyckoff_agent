@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Point & Figure (P&F) Chart Analysis.
 Translates MATLAB plot_pnf.m / pnfcount.m / pnftarget.m to Python.

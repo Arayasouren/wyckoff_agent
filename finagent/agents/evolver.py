@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Evolver agent: generate 3 Pareto candidate strategies and select the best.
 GEPA-inspired: diagnosis → multi-candidate → holdout evaluation → select winner.

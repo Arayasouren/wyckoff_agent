@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Date-based rolling window generator.
 Works with trading calendar dates rather than integer indices,

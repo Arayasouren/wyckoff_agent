@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Data fetcher for OHLCV data.
 Supports: US stocks (AAPL), indices (^SPX), A-shares (600519.SS / 000001.SZ), HK (0700.HK)

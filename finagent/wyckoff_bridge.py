@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Bridge layer between finagent and WyckoffAnalysis.
 Calls the existing wyckoff_analyzer engine and formats output for LLM consumption.

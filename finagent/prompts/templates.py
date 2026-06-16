@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Helper functions that build final prompts by merging strategy config with templates.
 The actual system prompt text lives in the strategy JSON (so it can evolve).

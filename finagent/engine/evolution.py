@@ -1,3 +1,6 @@
+# Copyright (C) 2026 Araya
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Mode 1: Self-learning evolution pipeline.
 Rolls through historical windows, predicts, critiques, then evolves the active profile.
