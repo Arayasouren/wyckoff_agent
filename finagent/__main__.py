@@ -162,8 +162,8 @@ def _build_info_box(model: str, profile: str) -> list:
              "   [dim]Powered by Claude Code[/]"),
         row(" " * W),
         sep(),
-        rrow("   Version : v2.0  │  Data : Wind WDS",
-             "   [dim]Version : v2.0  │  Data : Wind WDS[/]"),
+        rrow("   Version : v1.0  │  Data : Wind WDS",
+             "   [dim]Version : v1.0  │  Data : Wind WDS[/]"),
         bot(),
     ]
 
