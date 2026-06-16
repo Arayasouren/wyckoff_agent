@@ -90,6 +90,18 @@ FINAGENT_MODEL=glm-4.6
 
 ---
 
+## 记忆库内务 / 熵管理（可选）
+
+情境记忆库会随训练增长，系统用一个**独立于 LLM 的向量（embedding）接口**做"内务"——
+笔记的**合并压缩、去重、被 prompt 吸收后清理**，避免记忆膨胀失控（熵管理）。
+
+- **可选**：在 `.env` 配 `EMBEDDING_API_KEY` + `EMBEDDING_BASE_URL`（一个独立的
+  OpenAI 兼容 `/embeddings` 端点，如 bge-m3）即启用。它**和 LLM 提供商完全分开**，各用各的 key。
+- **不启用也能正常运行**：记忆检索照常（由 LLM 选择），只是上述部分内务会被跳过
+  或退化为 LLM-only——长期大量训练时记忆库的自动整理能力会变弱。
+
+---
+
 ## 使用
 
 入口统一为 `python -m finagent <子命令>`（或安装后直接 `finagent <子命令>`）。

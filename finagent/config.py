@@ -38,10 +38,13 @@ OPENAI_COMPAT_FALLBACK_API_KEY = os.getenv("OPENAI_COMPAT_FALLBACK_API_KEY", "")
 OPENAI_COMPAT_FALLBACK_BASE_URL = os.getenv("OPENAI_COMPAT_FALLBACK_BASE_URL", "")
 FALLBACK_MODEL = os.getenv("FINAGENT_FALLBACK_MODEL", "")
 
-# Embedding provider (OpenAI-compat /embeddings endpoint) — used for memory semantic retrieval.
-# Defaults fall through to the OPENAI_COMPAT_* config so a single SiliconFlow/etc. account works.
-EMBEDDING_BASE_URL = os.getenv("EMBEDDING_BASE_URL", OPENAI_COMPAT_BASE_URL)
-EMBEDDING_API_KEY  = os.getenv("EMBEDDING_API_KEY", OPENAI_COMPAT_API_KEY)
+# Embedding endpoint (OpenAI-compatible /embeddings) — its OWN, independent of the
+# LLM provider above. OPTIONAL: it only powers memory "housekeeping" (entropy
+# management) — note compression / dedup / prompt-absorption. If left unset, the
+# agent runs normally; those housekeeping steps are skipped or fall back to LLM-only.
+# Must be configured explicitly (no fall-through to the LLM keys).
+EMBEDDING_API_KEY  = os.getenv("EMBEDDING_API_KEY", "")
+EMBEDDING_BASE_URL = os.getenv("EMBEDDING_BASE_URL", "")
 EMBEDDING_MODEL    = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
 EMBEDDING_DIM      = int(os.getenv("EMBEDDING_DIM", "1024"))  # bge-m3 = 1024
 
