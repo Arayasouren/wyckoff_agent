@@ -23,9 +23,7 @@ dependencies = [
 [project.optional-dependencies]
 # OpenAI-compatible LLM provider + embeddings
 openai = ["openai>=1.40"]
-# Charts (FINAGENT_ENABLE_CHART=1)
-chart = ["matplotlib>=3.7"]
-all = ["openai>=1.40", "matplotlib>=3.7"]
+all = ["openai>=1.40"]
 dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
 
 [project.scripts]

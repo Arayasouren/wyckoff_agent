@@ -18,8 +18,6 @@ FinAgent 是一个**自我进化**的威科夫（Wyckoff）技术分析智能体
 - **序列匹配概率**：将当前事件序列与 72.7 万行历史数据库比对，给出实证涨跌频率
   （首次运行自动从内置 CSV 构建）。
 - **多档案管理**：版本化、候选/部署、滚动回测。
-- **行情数据由服务提供**：客户端无需任何数据源/凭据；行情（可由 Wind WDS 支撑）与
-  威科夫计算都在服务端完成，客户端凭授权码调用。
 
 ---
 
@@ -42,7 +40,7 @@ git clone <your-repo-url> finagent && cd finagent
 python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
 # 3) 安装依赖（二选一）
-pip install -e ".[all]"          # 含 openai + matplotlib 可选项
+pip install -e ".[all]"          # 含 openai 可选项
 # 或仅核心 + 按需：
 pip install -r requirements.txt
 ```
@@ -52,10 +50,7 @@ pip install -r requirements.txt
 | extra | 作用 |
 |---|---|
 | `openai` | OpenAI 兼容 LLM 端点 + 向量嵌入 |
-| `chart` | 画图（`matplotlib`，仅在开启画图时需要） |
-| `all` | 上面两者 |
-
-> 客户端不含任何行情数据库依赖（akshare/yfinance/Wind 都在服务端）。
+| `all` | 同上 |
 
 ---
 
@@ -86,7 +81,7 @@ OPENAI_COMPAT_BASE_URL=https://open.bigmodel.cn/api/paas/v4
 FINAGENT_MODEL=glm-4.6
 ```
 
-其余可选项（嵌入、fallback 端点、画图）见 `.env.example` 注释。
+其余可选项（嵌入、fallback 端点）见 `.env.example` 注释。
 
 ---
 
@@ -100,12 +95,6 @@ FINAGENT_MODEL=glm-4.6
   不依赖历史表；`status` 里的胜率日志也来自档案本身。
 - `data/finagent.db` 是**本地生成产物**，已在 `.gitignore` 中，不纳入版本库。
 
-### 关于市场数据
-
-所有行情数据由 **Wyckoff 服务**提供（服务端可接 Wind WDS 或其他数据源）。客户端**不含
-任何行情数据库依赖、也不需要数据凭据**——只要配好 `WYCKOFF_API_URL` 与 `WYCKOFF_API_KEY`。
-`seqstats` 历史参考表仍在本地（随包 CSV 构建），不经过服务。
-
 ---
 
 ## 使用
@@ -115,7 +104,7 @@ FINAGENT_MODEL=glm-4.6
 ```bash
 # 预测：用当前档案对某标的给出未来约 20 日方向
 python -m finagent predict 600519.SH
-python -m finagent predict 000300.SH --date 2026-03-31 --json
+python -m finagent predict 000300.SH --date 2026-03-31
 
 # 查看档案状态与历史统计
 python -m finagent status
@@ -142,9 +131,6 @@ python -m finagent compress-memory        # 强制合并相似记忆
 常用开关：`--profile <name>` 指定档案、`--model <name>` 指定模型、
 `-v` 详细日志、`--use-fallback` 改走备用 LLM 端点。
 
-> **画图默认关闭**。如需在 `evolve` 时输出 K 线进化图，设 `FINAGENT_ENABLE_CHART=1`
-> 并安装 `matplotlib`，图保存在 `data/figure/`。
-
 ---
 
 ## 目录结构
@@ -153,13 +139,11 @@ python -m finagent compress-memory        # 强制合并相似记忆
 finagent/            # 主程序包（CLI、四智能体、引擎、存储、记忆、序列统计）
   service.py         # Wyckoff 服务客户端（取价 / 快照 / 个股信息）
   wyckoff_bridge.py  # 调 /v1/snapshot 并格式化为 LLM 快照
-  data/fetcher.py    # 行情客户端（调 /v1/prices；无本地数据后端）
 data/
   profiles/
     mywyckoff.json         # 已训练的个股策略档案（当前档）
     mywyckoff_memory/      # 其情境记忆库（笔记 + 索引 + 向量）
     default.json           # 新建档案的模板
-  figure/                  # 进化图输出（默认不产出）
 wyckoffstats/        # seqstats 源 CSV（首次运行据此构建参考表）
 stockinfo/tags.csv   # 标的的规模/风格/行业标签（供序列匹配分桶）
 scripts/             # 辅助脚本（如手动 ingest seqstats）
