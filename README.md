@@ -40,17 +40,10 @@ git clone <your-repo-url> finagent && cd finagent
 python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
 # 3) 安装依赖（二选一）
-pip install -e ".[all]"          # 含 openai 可选项
+pip install -e ".[openai]"       # 含 OpenAI 兼容端点 + 向量嵌入支持
 # 或仅核心 + 按需：
 pip install -r requirements.txt
 ```
-
-可选依赖分组（`pyproject.toml` 的 extras）：
-
-| extra | 作用 |
-|---|---|
-| `openai` | OpenAI 兼容 LLM 端点 + 向量嵌入 |
-| `all` | 同上 |
 
 ---
 
