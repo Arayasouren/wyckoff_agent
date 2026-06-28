@@ -32,3 +32,4 @@ data/profiles/*_memory/_archive/
 
 # 本地运维备忘（含授权码/服务器信息），不提交
 OPERATOR_NOTES.md
+*.bak
